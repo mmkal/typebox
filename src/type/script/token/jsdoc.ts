@@ -35,26 +35,13 @@ THE SOFTWARE.
 const Open = '/**'
 const Close = '*/'
 // ------------------------------------------------------------------
-// TrimWhitespace
-// ------------------------------------------------------------------
-type TTrimWhitespace<Input extends string> = (
-  Input extends ` ${infer Rest extends string}` ? TTrimWhitespace<Rest> :
-  Input extends `\n${infer Rest extends string}` ? TTrimWhitespace<Rest> :
-  Input extends `\t${infer Rest extends string}` ? TTrimWhitespace<Rest> :
-  Input
-)
-// ------------------------------------------------------------------
 // JsDoc
 // ------------------------------------------------------------------
 /** Matches a JSDoc comment and captures its content. Start and End are consumed. */
-export type TJsDoc<Input extends string> = (
-  TTrimWhitespace<Input> extends `${typeof Open}${string}${typeof Close}${infer Rest extends string}` ? [string, Rest] : []
-)
-/** Matches a JSDoc comment and captures its content. Start and End are consumed. */
-export function JsDoc<Input extends string>(input: Input): TJsDoc<Input> {
+export function JsDoc(input: string): [string, string] | [] {
   const trimmed = input.trimStart()
   const index = trimmed.startsWith(Open) ? trimmed.indexOf(Close, Open.length) : -1
-  return (index === -1 ? [] : [Normalize(trimmed.slice(Open.length, index)), trimmed.slice(index + Close.length)]) as never
+  return index === -1 ? [] : [Normalize(trimmed.slice(Open.length, index)), trimmed.slice(index + Close.length)]
 }
 // ------------------------------------------------------------------
 // Normalize

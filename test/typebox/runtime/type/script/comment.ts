@@ -191,7 +191,16 @@ Test('Should Comment 15 (JSDoc)', () => {
   Assert.IsTrue(Type.IsNumber(T.properties.a))
   Assert.IsEqual(T.properties.a.description, 'foo bar')
 })
-Test('Should Comment 16', () => {
+Test('Should Comment 16 (JSDoc Optional Description)', () => {
+  const T = Type.Script(`{
+    a: number
+  }`)
+  const description: string | undefined = T.properties.a.description
+  Assert.IsTrue(Type.IsObject(T))
+  Assert.IsTrue(Type.IsNumber(T.properties.a))
+  Assert.IsEqual(description, undefined)
+})
+Test('Should Comment 17', () => {
   const T: Type.TUnion<[Type.TLiteral<1>, Type.TLiteral<2>]> = Type.Script(`
     1 /* x */ | 2
   `)
@@ -199,7 +208,7 @@ Test('Should Comment 16', () => {
   Assert.IsEqual(T.anyOf[0].const, 1)
   Assert.IsEqual(T.anyOf[1].const, 2)
 })
-Test('Should Comment 17', () => {
+Test('Should Comment 18', () => {
   const T = Type.Script(`
     1 /* x */ & 2
   `)
@@ -207,7 +216,7 @@ Test('Should Comment 17', () => {
   Assert.IsEqual(T.allOf[0].const, 1)
   Assert.IsEqual(T.allOf[1].const, 2)
 })
-Test('Should Comment 18', () => {
+Test('Should Comment 19', () => {
   const T: Type.TIntersect<[
     Type.TObject<{ x: Type.TLiteral<1> }>,
     Type.TLiteral<2>
@@ -218,7 +227,7 @@ Test('Should Comment 18', () => {
   Assert.IsEqual(T.allOf[0].properties.x.const, 1)
   Assert.IsEqual(T.allOf[1].const, 2)
 })
-Test('Should Comment 19', () => {
+Test('Should Comment 20', () => {
   const T: Type.TTemplateLiteral<'^(1|2)$'> = Type.Script(`
     type T = \`\${1 | /* hello */ 2 }\`
   `).T
@@ -228,7 +237,7 @@ Test('Should Comment 19', () => {
 // ------------------------------------------------------------------
 // Pathological
 // ------------------------------------------------------------------
-Test('Should Comment 20', () => {
+Test('Should Comment 21', () => {
   const T: Type.TObject<{
     x: Type.TNumber
     y: Type.TNumber
