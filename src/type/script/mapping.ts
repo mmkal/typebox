@@ -256,6 +256,24 @@ export function OptionalSemiColonMapping(input: [unknown] | []): unknown {
   return null
 }
 // -------------------------------------------------------------------
+// JsDoc: <JsDoc>
+// -------------------------------------------------------------------
+export type TJsDocMapping<Input extends string> = (
+  Input
+)
+export function JsDocMapping(input: string): unknown {
+  return input
+}
+// -------------------------------------------------------------------
+// OptionalJsDoc: [JsDoc] | []
+// -------------------------------------------------------------------
+export type TOptionalJsDocMapping<Input extends [unknown] | []> = (
+  Input extends [infer Description extends string] ? Description : null
+)
+export function OptionalJsDocMapping(input: [unknown] | []): unknown {
+  return input.length > 0 ? input[0] : null
+}
+// -------------------------------------------------------------------
 // KeywordString: 'string'
 // -------------------------------------------------------------------
 export type TKeywordStringMapping<Input extends 'string'> = (
@@ -812,27 +830,34 @@ export function OptionalMapping(input: [unknown] | []): unknown {
   return input.length > 0
 }
 // -------------------------------------------------------------------
-// Property: [Readonly, PropertyKey, Optional, ':', Type]
+// Property: [OptionalJsDoc, Readonly, PropertyKey, Optional, ':', Type]
 // -------------------------------------------------------------------
-export type TPropertyMapping<Input extends [unknown, unknown, unknown, unknown, unknown]> = (
-  Input extends [infer IsReadonly extends boolean, infer Key extends string, infer IsOptional extends boolean, string, infer Type extends T.TSchema] ? {
+type TApplyDescription<Description extends string | null, Type extends T.TSchema> = (
+  Description extends string ? Memory.TAssign<Type, { description: Description }> : Type
+)
+type TApplyModifiers<IsReadonly extends boolean, IsOptional extends boolean, Type extends T.TSchema> = (
+  [IsReadonly, IsOptional] extends [true, true] ? T.TReadonlyAdd<T.TOptionalAdd<Type>> :
+  [IsReadonly, IsOptional] extends [true, false] ? T.TReadonlyAdd<Type> :
+  [IsReadonly, IsOptional] extends [false, true] ? T.TOptionalAdd<Type> :
+  Type
+)
+export type TPropertyMapping<Input extends [unknown, unknown, unknown, unknown, unknown, unknown]> = (
+  Input extends [infer Description extends string | null, infer IsReadonly extends boolean, infer Key extends string, infer IsOptional extends boolean, string, infer Type extends T.TSchema] ? {
     [_ in Key]: (
-      [IsReadonly, IsOptional] extends [true, true] ? T.TReadonlyAdd<T.TOptionalAdd<Type>> :
-      [IsReadonly, IsOptional] extends [true, false] ? T.TReadonlyAdd<Type> :
-      [IsReadonly, IsOptional] extends [false, true] ? T.TOptionalAdd<Type> :
-      Type
+      TApplyDescription<Description, TApplyModifiers<IsReadonly, IsOptional, Type>>
     )
   } : never
 )
-export function PropertyMapping(input: [unknown, unknown, unknown, unknown, unknown]): unknown {
-  const [isReadonly, key, isOptional, _colon, type] = input as [boolean, string, boolean, ':', T.TSchema]
+export function PropertyMapping(input: [unknown, unknown, unknown, unknown, unknown, unknown]): unknown {
+  const [description, isReadonly, key, isOptional, _colon, type] = input as [string | null, boolean, string, boolean, ':', T.TSchema]
+  const property = (
+    isReadonly && isOptional ? T.ReadonlyAdd(T.OptionalAdd(type)) :
+    isReadonly && !isOptional ? T.ReadonlyAdd(type) :
+    !isReadonly && isOptional ? T.OptionalAdd(type) :
+    type
+  )
   return {
-    [key]: (
-      isReadonly && isOptional ? T.ReadonlyAdd(T.OptionalAdd(type)) :
-      isReadonly && !isOptional ? T.ReadonlyAdd(type) :
-      !isReadonly && isOptional ? T.OptionalAdd(type) :
-      type
-    )
+    [key]: Guard.IsString(description) && description.length > 0 ? Memory.Update(property, {}, { description }) : property
   }
 }
 // -------------------------------------------------------------------
