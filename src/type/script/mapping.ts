@@ -824,30 +824,22 @@ export function OptionalMapping(input: [unknown] | []): unknown {
   return input.length > 0
 }
 // -------------------------------------------------------------------
-// Property: [Readonly, PropertyKey, Optional, ':', Type] | [OptionalJsDoc, Readonly, PropertyKey, Optional, ':', Type]
+// Property: [Readonly, PropertyKey, Optional, ':', Type, OptionalJsDoc?]
 // -------------------------------------------------------------------
-type TApplyModifiers<IsReadonly extends boolean, IsOptional extends boolean, Type extends T.TSchema> = (
-  [IsReadonly, IsOptional] extends [true, true] ? T.TReadonlyAdd<T.TOptionalAdd<Type>> :
-  [IsReadonly, IsOptional] extends [true, false] ? T.TReadonlyAdd<Type> :
-  [IsReadonly, IsOptional] extends [false, true] ? T.TOptionalAdd<Type> :
-  Type
+export type TPropertyMapping<Input extends [unknown, unknown, unknown, unknown, unknown, unknown?]> = (
+  Input extends [infer IsReadonly extends boolean, infer Key extends string, infer IsOptional extends boolean, string, infer Type extends T.TSchema, unknown?] ? {
+    [_ in Key]: (
+      (
+        [IsReadonly, IsOptional] extends [true, true] ? T.TReadonlyAdd<T.TOptionalAdd<Type>> :
+        [IsReadonly, IsOptional] extends [true, false] ? T.TReadonlyAdd<Type> :
+        [IsReadonly, IsOptional] extends [false, true] ? T.TOptionalAdd<Type> :
+        Type
+      ) & { description?: string }
+    )
+  } : never
 )
-type TApplyDescription<Type extends T.TSchema> = Type & { description?: string }
-type TPropertyMappingFromParts<IsReadonly extends boolean, Key extends string, IsOptional extends boolean, Type extends T.TSchema> = {
-  [_ in Key]: (
-    TApplyDescription<TApplyModifiers<IsReadonly, IsOptional, Type>>
-  )
-}
-export type TPropertyMapping<Input extends [unknown, unknown, unknown, unknown, unknown] | [unknown, unknown, unknown, unknown, unknown, unknown]> = (
-  Input extends [infer IsReadonly extends boolean, infer Key extends string, infer IsOptional extends boolean, string, infer Type extends T.TSchema] ? (
-    TPropertyMappingFromParts<IsReadonly, Key, IsOptional, Type>
-  ) :
-  Input extends [string | null, infer IsReadonly extends boolean, infer Key extends string, infer IsOptional extends boolean, string, infer Type extends T.TSchema] ? (
-    TPropertyMappingFromParts<IsReadonly, Key, IsOptional, Type>
-  ) : never
-)
-export function PropertyMapping(input: [unknown, unknown, unknown, unknown, unknown, unknown]): unknown {
-  const [description, isReadonly, key, isOptional, _colon, type] = input as [string | null, boolean, string, boolean, ':', T.TSchema]
+export function PropertyMapping(input: [unknown, unknown, unknown, unknown, unknown, unknown?]): unknown {
+  const [isReadonly, key, isOptional, _colon, type, description] = input as [boolean, string, boolean, ':', T.TSchema, string | null | undefined]
   const property = (
     isReadonly && isOptional ? T.ReadonlyAdd(T.OptionalAdd(type)) :
     isReadonly && !isOptional ? T.ReadonlyAdd(type) :
