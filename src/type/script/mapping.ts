@@ -838,8 +838,8 @@ export type TPropertyMapping<Input extends [unknown, unknown, unknown, unknown, 
     )
   } : never
 )
-export function PropertyMapping(input: [unknown, unknown, unknown, unknown, unknown, unknown?]): unknown {
-  const [isReadonly, key, isOptional, _colon, type, description] = input as [boolean, string, boolean, ':', T.TSchema, string | null | undefined]
+export function PropertyMapping(input: [boolean, string, boolean, ':', T.TSchema, (string | null)?]): unknown {
+  const [isReadonly, key, isOptional, _colon, type, description] = input
   const property = (
     isReadonly && isOptional ? T.ReadonlyAdd(T.OptionalAdd(type)) :
     isReadonly && !isOptional ? T.ReadonlyAdd(type) :
