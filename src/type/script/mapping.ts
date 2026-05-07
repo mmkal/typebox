@@ -832,19 +832,17 @@ export function OptionalMapping(input: [unknown] | []): unknown {
 // -------------------------------------------------------------------
 // Property: [OptionalJsDoc, Readonly, PropertyKey, Optional, ':', Type]
 // -------------------------------------------------------------------
-type TApplyDescription<Description extends string | null, Type extends T.TSchema> = (
-  Description extends string ? Memory.TAssign<Type, { description: Description }> : Type
-)
 type TApplyModifiers<IsReadonly extends boolean, IsOptional extends boolean, Type extends T.TSchema> = (
   [IsReadonly, IsOptional] extends [true, true] ? T.TReadonlyAdd<T.TOptionalAdd<Type>> :
   [IsReadonly, IsOptional] extends [true, false] ? T.TReadonlyAdd<Type> :
   [IsReadonly, IsOptional] extends [false, true] ? T.TOptionalAdd<Type> :
   Type
 )
+type TApplyDescription<Type extends T.TSchema> = Type & { description?: string }
 export type TPropertyMapping<Input extends [unknown, unknown, unknown, unknown, unknown, unknown]> = (
-  Input extends [infer Description extends string | null, infer IsReadonly extends boolean, infer Key extends string, infer IsOptional extends boolean, string, infer Type extends T.TSchema] ? {
+  Input extends [string | null, infer IsReadonly extends boolean, infer Key extends string, infer IsOptional extends boolean, string, infer Type extends T.TSchema] ? {
     [_ in Key]: (
-      TApplyDescription<Description, TApplyModifiers<IsReadonly, IsOptional, Type>>
+      TApplyDescription<TApplyModifiers<IsReadonly, IsOptional, Type>>
     )
   } : never
 )
